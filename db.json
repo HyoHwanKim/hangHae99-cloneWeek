@@ -1,0 +1,11 @@
+{
+  "formdata": [
+    {
+      "userid": "string",
+      "username": "string",
+      "password": "string",
+      "birthday": "string",
+      "image": "file_path"
+    }
+  ]
+}
