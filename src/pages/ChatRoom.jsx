@@ -5,6 +5,11 @@ import { useRef } from "react";
 
 function ChatRoom() {
   const [whoIAm, setWhoIAm] = useState(1);
+  const scrollRef = useRef();
+
+  useEffect(() => {
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, []);
 
   useEffect(() => {
     setWhoIAm(1);
@@ -130,7 +135,7 @@ function ChatRoom() {
   return (
     <div>
       <ChatRoomWrapper>
-        <ChatLog>
+        <ChatLog ref={scrollRef}>
           {messageList.map((item, index) => (
             <IndividualChat
               whoIAm={whoIAm}
