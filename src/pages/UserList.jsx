@@ -10,11 +10,11 @@ function UserList() {
 
   const getUsersList = async () => {
     try {
-      const accessToken = localStorage.getItem('Access_key')
+      const accessToken = localStorage.getItem('ACCESS_KEY')
 
       const response = await axios.get('http://13.125.6.183:8080/users/user-info', {
         headers: {
-          ACCESS_KEY: `Bearer ${accessToken}`,
+          ACCESS_KEY: accessToken
         },
       })
 
