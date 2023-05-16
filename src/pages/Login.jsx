@@ -27,6 +27,12 @@ function Login() {
       // 서버로 데이터 전송
       const response = await axios.post('http://13.125.6.183:8080/users/login', loginData)
       console.log('데이터 : ', response.data)
+
+      const Access_key = response.headers.get('Access_key')
+      const Refresh_key = response.headers.get('Refresh_key')
+      localStorage.setItem('ACCESS_KEY', Access_key)
+      localStorage.setItem('REFRESH_KEY', Refresh_key)
+
       navigate('/userslist')
 
     } catch (error) {
@@ -35,7 +41,7 @@ function Login() {
   }
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setLoginForm({ ...loginForm, [name]: value })
   }
 

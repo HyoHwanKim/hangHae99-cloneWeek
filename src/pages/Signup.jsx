@@ -98,7 +98,7 @@ function Signup() {
       formData.append('username', username)
       formData.append('password', password)
       formData.append('birthday', formattedDate)
-      formData.append('image', imagePreview, file)
+      formData.append('image', imagePreview)
 
       try {
         const response = await addUsers(formData)

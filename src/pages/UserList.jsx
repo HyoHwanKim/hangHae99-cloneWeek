@@ -1,10 +1,31 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import Header from '../components/Header'
-
-
+import axios from 'axios'
 
 function UserList() {
+  useEffect(() => {
+    getUsersList()
+  }, [])
+
+  const getUsersList = async () => {
+    try {
+      const accessToken = localStorage.getItem('Access_key')
+
+      const response = await axios.get('http://13.125.6.183:8080/users/user-info', {
+        headers: {
+          ACCESS_KEY: `Bearer ${accessToken}`,
+        },
+      })
+
+      console.log('성공시 받은 데이터 :', response.data)
+    } catch (error) {
+      console.error('실패시 에러 :', error)
+    }
+  }
+
+  console.log('getUsersList : ', getUsersList)
+
   return (
     <>
       <Header />
@@ -22,7 +43,6 @@ function UserList() {
 
 export default UserList
 
-
 const UserListContainer = styled.div`
   padding: 20px;
 `
@@ -35,7 +55,7 @@ const UserInfoContainer = styled.div`
 const ProfilePicture = styled.div`
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: 40%;
   background-color: gray;
   display: flex;
   align-items: center;
