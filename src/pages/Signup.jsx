@@ -123,8 +123,6 @@ function Signup() {
     }
   }
 
-
-
   return (
     <Container>
       <SignUpForm
