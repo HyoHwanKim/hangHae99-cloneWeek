@@ -1,41 +1,79 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Header from '../components/Header'
-import axios from 'axios'
+import axios from '../utils/axios'
 
 function UserList() {
+  const [userList, setUserList] = useState([])
+  const [myProfile, setMyProfile] = useState()
+  const [chatRooms, setChatRooms] = useState([])
+
   useEffect(() => {
+    getMyProfile()
     getUsersList()
+    getChatRoomList()
   }, [])
 
+  //내 정보 조회
+  const getMyProfile = async () => {
+    const response = await axios.get('/users/mypage')
+    setMyProfile(response.data)
+  }
+
+  // 유저목록 조회
   const getUsersList = async () => {
     try {
-      const accessToken = localStorage.getItem('ACCESS_KEY')
-
-      const response = await axios.get('http://13.125.6.183:8080/users/user-info', {
-        headers: {
-          ACCESS_KEY: accessToken
-        },
-      })
-
-      console.log('성공시 받은 데이터 :', response.data)
+      const response = await axios.get('/users/user-info')
+      setUserList(response.data);
     } catch (error) {
-      console.error('실패시 에러 :', error)
+      console.error('실패시 에러:', error)
     }
   }
 
-  console.log('getUsersList : ', getUsersList)
+  // 체팅방리스트 조회
+  const getChatRoomList = async () => {
+    const response = await axios.get('/room')
+    setChatRooms(response.data)
+  }
+
+
 
   return (
     <>
       <Header />
       <UserListContainer>
+
         <UserInfoContainer>
-          <ProfilePicture>사진</ProfilePicture>
-          <Name>이름</Name>
+          {myProfile && (
+            <>
+              <UserImage src={myProfile.image_url} alt="프로필 사진" />
+              <Name>{myProfile.username}</Name>
+            </>
+          )}
         </UserInfoContainer>
+
+
         <div>생일 친구 보여주기</div>
-        <div>친구 리스트 보여주기</div>
+
+        <ShowListContainer>
+          <Test>
+            {userList.map((user) => (
+              <ShowUserList key={user.userid}>
+                <UserImage src={user.image_url} alt="프로필 사진" />
+                <Name>{user.username}</Name>
+              </ShowUserList>
+            ))}
+          </Test>
+
+          <Test>
+            {chatRooms.map((room) => (
+              <ShowChatRooms key={room.roomId}>
+                {room.roomName}
+              </ShowChatRooms>
+            ))}
+          </Test>
+        </ShowListContainer>
+
       </UserListContainer>
     </>
   )
@@ -43,15 +81,44 @@ function UserList() {
 
 export default UserList
 
+const Test = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+`
+const ShowListContainer = styled.div`
+  border: 1px solid black;
+  padding: 10px;
+  display: flex;
+  gap: 5%;
+`
+const ShowChatRooms = styled.div`
+  border: 1px solid black;
+  width: 100%;
+  margin-bottom: 20px;
+
+`
+const UserImage = styled.img`
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 40%;
+`
+const ShowUserList = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border: 1px solid black;
+  width: 100%;
+`
 const UserListContainer = styled.div`
   padding: 20px;
 `
-
 const UserInfoContainer = styled.div`
   display: flex;
   align-items: center;
+  border: 1px solid black;
 `
-
 const ProfilePicture = styled.div`
   width: 100px;
   height: 100px;
@@ -60,10 +127,8 @@ const ProfilePicture = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 24px;
 `
-
 const Name = styled.div`
   margin-left: 10px;
+  
 `

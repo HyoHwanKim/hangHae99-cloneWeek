@@ -1,13 +1,13 @@
 import { TextField, Button } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { styled } from 'styled-components'
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { addUsers } from '../api/users'
-import moment from 'moment/moment'
 import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
 
 
 function Signup() {
@@ -20,17 +20,16 @@ function Signup() {
   const [nameError, setNameError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
-  const [selectedDate, setSelectedDate] = useState(null)
+  const [selectedDate, setSelectedDate] = useState('')
 
   const navigate = useNavigate()
-  // console.log(imagePreview)
 
   let file
   const ImageUploadHandler = (e) => {
     file = e.target.files[0]
     const reader = new FileReader()
 
-    console.log('사진 : ', file)
+    // console.log('사진 : ', file)
 
     reader.onloadend = () => {
       setImagePreview(file) // 이미지 데이터를 그대로 설정
@@ -45,7 +44,18 @@ function Signup() {
     // 중복검사 로직
   }
 
+  useEffect(() => {
+    console.log(selectedDate);
+  }, [selectedDate]);
+
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date)
+    console.log(selectedDate)
+  }
+
   const SignUpClick = async () => {
+
     let isValid = true
 
     const useridRegex = /^[a-zA-Z0-9]{4,12}$/ // 영어 알파벳 4자리에서 12자리
@@ -66,7 +76,7 @@ function Signup() {
       setNameError('이름을 입력해주세요.')
       isValid = false
     } else if (!nameRegex.test(username)) {
-      setNameError('이름은 알파벳으로 이루어진 2~10자여야 합니다.')
+      setNameError('이름은 한글로 이루어진 2~10자여야 합니다.')
       isValid = false
     } else {
       setNameError('')
@@ -92,7 +102,7 @@ function Signup() {
     }
 
     if (isValid) {
-      const formattedDate = moment(selectedDate).format('YYYY-MM-DD')
+      const formattedDate = dayjs(selectedDate).format('YYYY-MM-DD')
       const formData = new FormData()
       formData.append('userid', userid)
       formData.append('username', username)
@@ -100,9 +110,11 @@ function Signup() {
       formData.append('birthday', formattedDate)
       formData.append('image', imagePreview)
 
+      console.log('데이트피커 : ', formattedDate)
+
       try {
         const response = await addUsers(formData)
-        console.log('formdata : ', response)
+        alert('회원가입되셨습니다.')
         navigate('/')
 
       } catch (error) {
@@ -110,6 +122,7 @@ function Signup() {
       }
     }
   }
+
 
 
   return (
@@ -197,7 +210,7 @@ function Signup() {
             <DatePicker
               label="생년월일"
               value={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
+              onChange={handleDateChange}
             />
           </DemoContainer>
         </LocalizationProvider>
