@@ -1,10 +1,12 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 
 function Header() {
 
+  const navigate = useNavigate()
 
 
   const logOut = async () => {
@@ -26,6 +28,7 @@ function Header() {
     window.localStorage.removeItem('REFRESH_KEY')
     window.localStorage.removeItem('ACCESS_KEY')
     alert('로그아웃')
+    navigate('/')
   }
 
   return (
