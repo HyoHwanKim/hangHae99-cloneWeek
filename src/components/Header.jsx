@@ -2,6 +2,8 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import logo from '../img/logo.png'
+
 
 
 function Header() {
@@ -34,7 +36,9 @@ function Header() {
   return (
     <HeaderContainer>
       <Left></Left>
-      <Center>로고</Center>
+      <Center>
+        <Logo src={logo} alt="logo" />
+      </Center>
       <Right onClick={logOutHeandler}>LogOut</Right>
     </HeaderContainer>
   )
@@ -42,13 +46,16 @@ function Header() {
 
 export default Header
 
+const Logo = styled.img`
+  width: 100px;
+  height: 100px;
+`
 
 const HeaderContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f2f2f2;
-  padding: 20px;
+  background-color: #FEE500;
 `
 
 const Left = styled.div`
@@ -60,5 +67,7 @@ const Center = styled.div`
 `
 
 const Right = styled.div`
-  margin-right: 10px;
+  margin-right: 50px;
+  cursor: pointer;
+
 `

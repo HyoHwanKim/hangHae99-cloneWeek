@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import axios from '../utils/axios'
 import ReactModal from 'react-modal'
 import { useNavigate } from 'react-router-dom'
+import { Box, Button, TextField } from '@mui/material'
 
 
 function UserList() {
@@ -144,23 +145,29 @@ function UserList() {
         </BirthdayContainer> */}
 
         <ShowListContainer>
-          <Test>
+          <ShowContainerSecthon>
             {userList.map((user) => (
               <ShowUserList key={user.userid} onClick={() => userDetail(user.userid)}>
                 <UserImage src={user.image_url} alt="프로필 사진" />
                 <Name>{user.username}</Name>
               </ShowUserList>
             ))}
-          </Test>
+          </ShowContainerSecthon>
 
-          <Test>
-            <button onClick={openModal}>방생성</button>
+          <ShowContainerSecthon>
+            <Button variant="outlined" onClick={openModal}
+              sx={{
+                marginBottom: '20px',
+                width: '422px',
+                padding: '10px'
+              }}>방생성</Button>
             {chatRooms.map((room) => (
               <ShowChatRooms key={room.roomId} onClick={() => entryChatRoom(room.roomId)}>
                 {room.roomName}
               </ShowChatRooms>
             ))}
-          </Test>
+          </ShowContainerSecthon>
+
           <ReactModal
             isOpen={addRoom}
             onRequestClose={closeModal}
@@ -176,13 +183,14 @@ function UserList() {
               },
             }}
           >
-            <input
-              type="text"
-              placeholder="방 이름"
+
+            <TextField id="outlined-basic" label="방이름" variant="outlined"
               onChange={handleRoomNameChange}
-              value={roomName}
-            />
-            <button onClick={handleAddRoom}>방 추가</button>
+              value={roomName} />
+            <Button variant="outlined" onClick={handleAddRoom}
+              sx={{
+                marginLeft: '160px',
+              }}>방생성</Button>
           </ReactModal>
 
 
@@ -192,7 +200,7 @@ function UserList() {
             ariaHideApp={false}
             style={{
               content: {
-                width: '50%',
+                width: '500px',
                 height: '50%',
                 margin: 'auto',
                 borderRadius: '8px',
@@ -201,7 +209,6 @@ function UserList() {
             }}
           >
             <BirthdayImage src={detailProfile.image_url} alt="프로필 사진" />
-            {/* <img>{detailProfile.image_url}</img> */}
             <div>{detailProfile.username}</div>
             <div>{detailProfile.birthday}</div>
           </ReactModal>
@@ -215,22 +222,32 @@ function UserList() {
 
 export default UserList
 
-const Test = styled.div`
+const ShowContainerSecthon = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  border: 1px solid black;
+  padding: 20px;
 `
 const ShowListContainer = styled.div`
   border: 1px solid black;
+  border-radius: 10px;
   padding: 10px;
   display: flex;
   gap: 5%;
 `
 const ShowChatRooms = styled.div`
   border: 1px solid black;
-  width: 100%;
+  width: 400px;
+  height: 25px;
   margin-bottom: 20px;
+  cursor: pointer;
+  text-align: center;
+  padding: 10px;
 
+  &:hover {
+    background-color: lightgray; 
+  }
 `
 const BirthdayContainer = styled.div`
   display: flex;
@@ -255,10 +272,16 @@ const ShowUserList = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  border: 1px solid black;
+  /* border: 1px solid black; */
+  border-radius: 8px;
   width: 100%;
   cursor: pointer;
+
+  &:hover {
+    background-color: lightgray; 
+  }
 `
+
 const UserListContainer = styled.div`
   padding: 20px;
 `
@@ -266,6 +289,8 @@ const UserInfoContainer = styled.div`
   display: flex;
   align-items: center;
   border: 1px solid black;
+  border-radius: 10px;
+  padding: 20px;
 `
 const ProfilePicture = styled.div`
   width: 100px;

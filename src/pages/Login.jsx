@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { styled } from 'styled-components'
 import axios from 'axios'
+import logo from '../img/logo.png'
 
 function Login() {
   const [loginForm, setLoginForm] = useState({
@@ -50,7 +51,7 @@ function Login() {
   return (
     <Container>
       <LoginForm>
-        <h1>Title</h1>
+        <Logo src={logo} alt="로고" />
         <TextFidelContainer>
           <TextField
             id="userid"
@@ -116,6 +117,13 @@ function Login() {
 }
 
 export default Login
+
+
+const Logo = styled.img`
+  width: 250px;
+  height: 250px;
+`
+
 
 const Container = styled.div`
   display: flex;
