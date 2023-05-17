@@ -4,21 +4,17 @@ import { styled } from "styled-components";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { receiveChatRoomInfo } from "../api/api";
-import { useQuery } from "react-query";
+import { useQuery, useMutation, QueryClient } from "react-query";
+import { useParams } from "react-router-dom";
+import { submitPicture } from "../api/api";
 
 function ChatRoom() {
-  // 스크롤 부분(채팅방 입장시 가장 아래로, 채팅로그가 업데이트 될 때마다 가장 아래로)
-  const scrollRef = useRef();
-  useEffect(() => {
-    scrollRef.current &&
-      (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
-  }, []);
-
   // 입력값 상태관리
   const [input, setInput] = useState("");
   const [messageList, setMessageList] = useState([]);
   const [stompClient, setStompClient] = useState(null);
   const [chatRoomInfo, setChatRoomInfo] = useState({});
+  const [file, setFile] = useState(null);
 
   // 채팅방에 입장한 본인이 누구인지를 상태관리
   const [whoIAm, setWhoIAm] = useState(null);
@@ -26,14 +22,19 @@ function ChatRoom() {
     setWhoIAm(chatRoomInfo.userId);
   }, [chatRoomInfo]);
 
-  // 임시 : 토큰 쿠키에 저장
-  const token =
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ5dW1pbiIsImF1dGgiOiJVU0VSIiwiZXhwIjoxNjg0MjUyNTkxLCJpYXQiOjE2ODQyNDg5OTF9.MEE9ECj2MHqxObUnNUzTrNUXxlJtszddyVszIQ2is8Y";
-  const tokenInCookie = `test=Bearer ${token}`;
-  document.cookie = tokenInCookie;
+  // 스크롤 부분(채팅방 입장시 가장 아래로, 채팅로그가 업데이트 될 때마다 가장 아래로)
+  const scrollRef = useRef();
+  useEffect(() => {
+    scrollRef.current &&
+      (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
+  }, [messageList]);
 
-  // 임시 : 방 아이디
-  const roomId = "f0526fda-c75b-4186-951d-4d89ae8e5dbf";
+  // 토큰 로컬 스토리지에서 추출
+  const token = localStorage.getItem("ACCESS_KEY");
+
+  // 방 아이디 추출
+  const params = useParams();
+  const roomId = params.id;
 
   //방 정보 받아오기
   const { isLoading, isError, data } = useQuery("receiveRoomInfo", () =>
@@ -41,9 +42,8 @@ function ChatRoom() {
   );
 
   useEffect(() => {
-    data && setChatRoomInfo(data);
-
     if (data) {
+      setChatRoomInfo(data);
       // 소켓 연결
       const stompClient = new Client({
         webSocketFactory: () =>
@@ -51,17 +51,32 @@ function ChatRoom() {
         // 접속했을 때
         onConnect: (frame) => {
           setStompClient(stompClient);
-
           // 구독상태 만들기
-          stompClient.subscribe("/sub/chat/room" + roomId, function (message) {
-            setMessageList((prev) => [...prev, JSON.parse(message.body)]);
-            console.log(messageList);
-          });
+          const subscriptionInfo = stompClient.subscribe(
+            "/sub/chat/room" + roomId,
+            function (message) {
+              setMessageList((prev) => [...prev, JSON.parse(message.body)]);
+            }
+          );
+
+          chatRoomInfo !== {} &&
+            stompClient.publish({
+              destination: "/pub/chat/enter",
+              headers: { ACCESS_KEY: token },
+              body: JSON.stringify({
+                type: "ENTER",
+                sender: data.sender,
+                roomId: data.roomId,
+                message: "",
+              }),
+            });
+        },
+        onDisconnect: () => {
           stompClient.publish({
-            destination: "/pub/chat/enter",
+            destination: "pub/chat/leave",
             headers: { ACCESS_KEY: token },
             body: JSON.stringify({
-              type: "ENTER",
+              type: "LEAVE",
               sender: data.sender,
               roomId: data.roomId,
               message: "",
@@ -74,19 +89,43 @@ function ChatRoom() {
   }, [data]);
 
   const sendMsg = () => {
-    stompClient !== null &&
+    const messageInfo = {
+      type: "TALK",
+      sender: chatRoomInfo.sender,
+      userId: chatRoomInfo.userId,
+      roomId: chatRoomInfo.roomId,
+      image: chatRoomInfo.image_url,
+      message: input.trim(),
+    };
+
+    stompClient.publish({
+      destination: "/pub/chat/send",
+      headers: { ACCESS_KEY: token },
+      body: JSON.stringify(messageInfo),
+    });
+    setInput("");
+  };
+
+  const submitPictureApi = useMutation(submitPicture, {
+    onSuccess: () => {
       stompClient.publish({
         destination: "/pub/chat/send",
         headers: { ACCESS_KEY: token },
-        body: JSON.stringify({
-          type: "TALK",
-          sender: chatRoomInfo.sender,
-          userId: chatRoomInfo.userId,
-          roomId: chatRoomInfo.roomId,
-          image: chatRoomInfo.image_url,
-          message: input,
-        }),
+        body: {},
       });
+    },
+    onError: () => {
+      alert("사진 전송에 실패했습니다.");
+    },
+  });
+
+  const uploadImageHandler = (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    const uploadFile = formData.get("file");
+
+    submitPictureApi.mutate({ token, uploadFile });
   };
 
   if (isLoading) {
@@ -96,124 +135,6 @@ function ChatRoom() {
     return <p>오류가 발생하였습니다!</p>;
   }
 
-  // const messageList = [
-  //   {
-  //     type: "TALK",
-  //     sender: "최재홍",
-  //     userId: "1",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message:
-  //       "작성자가 본인이면 우측정렬, 본인이 아니면 좌측정렬, 작성자가 본인이 아닐 때 작성자가 연속해서 채팅을 쳤다면 프로필 사진은 최초에 한번만 랜더링 그 아래로는 프로필 사진이 보이지 않도록.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "이상언",
-  //     userId: "2",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message: "안녕하세요.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "조유민",
-  //     userId: "3",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message: "반갑습니다.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "김효환",
-  //     userId: "4",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message:
-  //       "동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세. 무궁화 삼천리 화려강산 대한사람 대한으로 길이 보전하세",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "김효환",
-  //     userId: "4",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message:
-  //       "동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세. 무궁화 삼천리 화려강산 대한사람 대한으로 길이 보전하세",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "김재형",
-  //     userId: "5",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message: "어렵습니다 어려워요.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "이현규",
-  //     userId: "6",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message:
-  //       "That's my Life is 아름다운 갤럭시 Be a writer 장르로는 판타지 내일 내게 열리는 건 big, big 스테이지 So that is who I am",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "최재홍",
-  //     userId: "1",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message:
-  //       "작성자가 본인이면 우측정렬, 본인이 아니면 좌측정렬, 작성자가 본인이 아닐 때 작성자가 연속해서 채팅을 쳤다면 프로필 사진은 최초에 한번만 랜더링 그 아래로는 프로필 사진이 보이지 않도록.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "이상언",
-  //     userId: "2",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message: "안녕하세요.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "조유민",
-  //     userId: "6",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message: "반갑습니다.",
-  //     img: "../img/profileImage1.png",
-  //   },
-
-  //   {
-  //     type: "TALK",
-  //     sender: "김재형",
-  //     userId: "6",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message: "어렵습니다 어려워요.",
-  //     img: "../img/profileImage1.png",
-  //   },
-  //   {
-  //     type: "TALK",
-  //     sender: "이현규",
-  //     userId: "6",
-  //     date: "5월15일 11:01",
-  //     roomId: "1",
-  //     message:
-  //       "That's my Life is 아름다운 갤럭시 Be a writer 장르로는 판타지 내일 내게 열리는 건 big, big 스테이지 So that is who I am",
-  //     img: "../img/profileImage1.png",
-  //   },
-  // ];
-
   return (
     <div>
       <ChatRoomWrapper>
@@ -222,6 +143,7 @@ function ChatRoom() {
             <IndividualChat
               whoIAm={whoIAm}
               key={index}
+              messagetype={item.type}
               previousId={messageList[index - 1]?.userId}
               commentUserId={item.userId}
               commentUserProfileImgUrl={item.image_url}
@@ -232,9 +154,26 @@ function ChatRoom() {
           ))}
         </ChatLog>
         <ChatInputArea>
-          <textarea onChange={(e) => setInput(e.target.value)}></textarea>
+          <textarea
+            value={input}
+            onKeyUp={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMsg();
+              }
+            }}
+            onChange={(e) => setInput(e.target.value)}
+          ></textarea>
           <div className='button-pair'>
-            <button className='picture-submit'>사진전송</button>
+            <label htmlFor='fileInput' className='picture-submit-label'>
+              사진전송
+              <input
+                type='file'
+                accept='image/*'
+                className='picture-submit'
+                onChange={(e) => uploadImageHandler(e)}
+              />
+            </label>
             <button onClick={sendMsg} className='message-submit'>
               전송
             </button>
@@ -253,32 +192,45 @@ const IndividualChat = ({
   commentUserName,
   commentContent,
   whoIAm,
+  messagetype,
 }) => {
   return (
-    <IndividualChatWrapper
-      previousId={previousId}
-      whoIAm={whoIAm}
-      commentUserId={commentUserId}
-    >
-      <ProfileImage
-        previousId={previousId}
-        whoIAm={whoIAm}
-        commentUserId={commentUserId}
-      >
-        <div className='img-wrapper'>
-          <img src={commentUserProfileImgUrl} />
-        </div>
-      </ProfileImage>
-      <div>
-        <p className='chat-name'>{commentUserName}</p>
-        <div className='chat-bubble-wrapper'>
-          <div className='chat-bubble'>
-            <div>{commentContent}</div>
+    <>
+      {messagetype === "TALK" ? (
+        <IndividualChatWrapper
+          previousId={previousId}
+          whoIAm={whoIAm}
+          commentUserId={commentUserId}
+        >
+          <ProfileImage
+            previousId={previousId}
+            whoIAm={whoIAm}
+            commentUserId={commentUserId}
+          >
+            <div className='img-wrapper'>
+              <img src={commentUserProfileImgUrl} />
+            </div>
+          </ProfileImage>
+          <div>
+            <p className='chat-name'>{commentUserName}</p>
+            <div className='chat-bubble-wrapper'>
+              <div className='chat-bubble'>
+                <div>{commentContent}</div>
+              </div>
+              <div className='comment-date'>{commentDate}</div>
+            </div>
           </div>
-          <div className='comment-date'>{commentDate}</div>
-        </div>
-      </div>
-    </IndividualChatWrapper>
+        </IndividualChatWrapper>
+      ) : messagetype === "ENTER" ? (
+        <EntranceText>
+          <div>{commentContent}</div>
+        </EntranceText>
+      ) : (
+        <EscapeText>
+          <div>{commentContent}</div>
+        </EscapeText>
+      )}
+    </>
   );
 };
 
@@ -288,7 +240,10 @@ const IndividualChatWrapper = styled.div`
   ${(props) => props.commentUserId == props.whoIAm && "align-self : flex-end"};
   ${(props) =>
     props.commentUserId == props.whoIAm ? "width : 60%" : "width : 80%"};
-  margin: 10px;
+  ${(props) =>
+    props.previousId == props.commentUserId
+      ? "margin : 5px 0 5px 10px"
+      : "margin: 5px 0 5px 0"};
 
   .chat-name {
     display: ${(props) =>
@@ -307,7 +262,7 @@ const IndividualChatWrapper = styled.div`
     ${(props) =>
       props.previousId == props.commentUserId
         ? "margin : 0px 10px 0px 40px"
-        : "10px"};
+        : "margin : 10px"};
 
     .chat-bubble {
       background-color: ${(props) =>
@@ -351,6 +306,36 @@ const ProfileImage = styled.div`
   }
 `;
 
+const EntranceText = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 10px 0;
+
+  div {
+    width: 30%;
+    background-color: #86b34f;
+    border-radius: 10px;
+    text-align: center;
+    color: #eaeaea;
+    font-weight: bold;
+  }
+`;
+
+const EscapeText = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 10px 0;
+
+  div {
+    width: 30%;
+    background-color: #d74b53;
+    border-radius: 10px;
+    text-align: center;
+    color: #eaeaea;
+    font-weight: bold;
+  }
+`;
+
 const ChatRoomWrapper = styled.div`
   height: 860px;
   width: 1000px;
@@ -374,6 +359,7 @@ const ChatInputArea = styled.div`
     border: none;
     padding: 10px;
     font-size: 20px;
+    background-color: rgb(245, 245, 240);
   }
 
   div {
@@ -385,6 +371,11 @@ const ChatInputArea = styled.div`
     display: flex;
     flex-direction: column;
     height: 70%;
+    background-color: rgb(245, 245, 240);
+
+    input {
+      display: none;
+    }
 
     button {
       border: none;
@@ -396,7 +387,17 @@ const ChatInputArea = styled.div`
       cursor: pointer;
     }
 
-    .picture-submit {
+    .picture-submit-label {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: none;
+      border-radius: 10px;
+      height: 50%;
+      width: 80px;
+      color: white;
+      font-weight: bolder;
+      cursor: pointer;
       background-color: rgb(47, 79, 79);
     }
 
