@@ -16,10 +16,26 @@ const receiveChatRoomInfo = async ({ token, roomId }) => {
 
 // 채팅방 사진 전송 api, method : post, end-point : chat/image
 const submitPicture = async ({ token, file }) => {
+  console.log(file);
   try {
     const response = await axios.post(
       `${process.env.REACT_APP_SERVER_URL}/chat/image`,
-      { image: file },
+      file,
+      { headers: { ACCESS_KEY: `${token}` } }
+    );
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return Promise.reject(error.response.data.message);
+  }
+};
+
+// 마이페이지 get api, method : get, end-point : /users/mypage
+const receiveMyPageInfo = async ({ token }) => {
+  try {
+    const response = await axios.get(
+      `${process.env.REACT_APP_SERVER_URL}/users/mypage`,
       { headers: { ACCESS_KEY: `${token}` } }
     );
     return response.data;
@@ -29,4 +45,4 @@ const submitPicture = async ({ token, file }) => {
   }
 };
 
-export { receiveChatRoomInfo, submitPicture };
+export { receiveChatRoomInfo, submitPicture, receiveMyPageInfo };

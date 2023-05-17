@@ -4,7 +4,7 @@ import { styled } from "styled-components";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { receiveChatRoomInfo } from "../api/api";
-import { useQuery, useMutation, QueryClient } from "react-query";
+import { useQuery, useMutation } from "react-query";
 import { useParams } from "react-router-dom";
 import { submitPicture } from "../api/api";
 import Header from "../components/Header";
@@ -15,7 +15,7 @@ function ChatRoom() {
   const [messageList, setMessageList] = useState([]);
   const [stompClient, setStompClient] = useState(null);
   const [chatRoomInfo, setChatRoomInfo] = useState({});
-  const [file, setFile] = useState(null);
+  const [uploadImage, setUploadImage] = useState(null);
 
   // 채팅방에 입장한 본인이 누구인지를 상태관리
   const [whoIAm, setWhoIAm] = useState(null);
@@ -98,21 +98,35 @@ function ChatRoom() {
       image: chatRoomInfo.image_url,
       message: input.trim(),
     };
-
-    stompClient.publish({
-      destination: "/pub/chat/send",
-      headers: { ACCESS_KEY: token },
-      body: JSON.stringify(messageInfo),
-    });
-    setInput("");
-  };
-
-  const submitPictureApi = useMutation(submitPicture, {
-    onSuccess: () => {
+    input &&
+      messageInfo.message.trim() &&
       stompClient.publish({
         destination: "/pub/chat/send",
         headers: { ACCESS_KEY: token },
-        body: {},
+        body: JSON.stringify(messageInfo),
+      });
+    setInput("");
+  };
+
+  const prepareUploadImage = (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("image", file);
+    setUploadImage(formData);
+  };
+
+  const submitPictureApi = useMutation(submitPicture, {
+    onSuccess: (response) => {
+      stompClient.publish({
+        destination: "/pub/chat/send",
+        headers: { ACCESS_KEY: token },
+        body: JSON.stringify({
+          type: "IMAGE",
+          sender: chatRoomInfo.sender,
+          userId: chatRoomInfo.userId,
+          roomId: chatRoomInfo.roomId,
+          image: response,
+        }),
       });
     },
     onError: () => {
@@ -120,13 +134,10 @@ function ChatRoom() {
     },
   });
 
-  const uploadImageHandler = (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    const uploadFile = formData.get("file");
-
-    submitPictureApi.mutate({ token, uploadFile });
+  const uploadImageHandler = () => {
+    uploadImage !== null &&
+      submitPictureApi.mutate({ token, file: uploadImage });
+    setUploadImage(null);
   };
 
   if (isLoading) {
@@ -152,6 +163,7 @@ function ChatRoom() {
               commentDate={item.date}
               commentUserName={item.sender}
               commentContent={item.message}
+              imageFile={item.image}
             />
           ))}
         </ChatLog>
@@ -159,7 +171,7 @@ function ChatRoom() {
           <textarea
             value={input}
             onKeyUp={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (e.key === "Enter") {
                 e.preventDefault();
                 sendMsg();
               }
@@ -167,15 +179,18 @@ function ChatRoom() {
             onChange={(e) => setInput(e.target.value)}
           ></textarea>
           <div className='button-pair'>
-            <label htmlFor='fileInput' className='picture-submit-label'>
-              사진전송
+            <label htmlFor='fileInput' className='picture-choice-label'>
+              사진선택
               <input
                 type='file'
-                accept='image/*'
-                className='picture-submit'
-                onChange={(e) => uploadImageHandler(e)}
+                id='fileInput'
+                className='picture-choice'
+                onChange={prepareUploadImage}
               />
             </label>
+            <button onClick={uploadImageHandler} className='picture-submit'>
+              사진전송
+            </button>
             <button onClick={sendMsg} className='message-submit'>
               전송
             </button>
@@ -195,6 +210,7 @@ const IndividualChat = ({
   commentContent,
   whoIAm,
   messagetype,
+  imageFile,
 }) => {
   return (
     <>
@@ -227,10 +243,33 @@ const IndividualChat = ({
         <EntranceText>
           <div>{commentContent}</div>
         </EntranceText>
-      ) : (
+      ) : messagetype === "LEAVE" ? (
         <EscapeText>
           <div>{commentContent}</div>
         </EscapeText>
+      ) : (
+        <IndividualChatWrapper
+          previousId={previousId}
+          whoIAm={whoIAm}
+          commentUserId={commentUserId}
+        >
+          <ProfileImage
+            previousId={previousId}
+            whoIAm={whoIAm}
+            commentUserId={commentUserId}
+          >
+            <div className='img-wrapper'>
+              <img src={commentUserProfileImgUrl} />
+            </div>
+          </ProfileImage>
+          <div>
+            <p className='chat-name'>{commentUserName}</p>
+            <div className='chat-bubble-wrapper'>
+              <UploadedImage src={imageFile}></UploadedImage>
+              <div className='comment-date'>{commentDate}</div>
+            </div>
+          </div>
+        </IndividualChatWrapper>
       )}
     </>
   );
@@ -389,7 +428,7 @@ const ChatInputArea = styled.div`
       cursor: pointer;
     }
 
-    .picture-submit-label {
+    .picture-choice-label {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -403,10 +442,20 @@ const ChatInputArea = styled.div`
       background-color: rgb(47, 79, 79);
     }
 
+    .picture-submit {
+      background-color: #6f4f28;
+    }
     .message-submit {
       background-color: rgb(112, 128, 144);
     }
   }
+`;
+
+const UploadedImage = styled.img`
+  align-self: flex-end;
+  max-height: 300px;
+  max-width: 200px;
+  border-radius: 15px;
 `;
 
 export default ChatRoom;
