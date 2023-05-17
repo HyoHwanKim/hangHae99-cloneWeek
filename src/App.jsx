@@ -1,9 +1,14 @@
+<<<<<<< HEAD:src/App.js
 import logo from "./logo.svg";
 import "./App.css";
 import Router from "./shared/Router";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const queryClient = new QueryClient();
+=======
+import './App.css';
+import Router from './shared/Router';
+>>>>>>> origin/main:src/App.jsx
 
 function App() {
   return (
