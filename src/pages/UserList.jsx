@@ -41,7 +41,7 @@ function UserList() {
     getMyProfile()
     getUsersList()
     getChatRoomList()
-    // happyBirthday()
+    happyBirthday()
   }, [])
 
   //내 정보 조회
@@ -50,11 +50,11 @@ function UserList() {
     setMyProfile(response.data)
   }
 
-  //생일 미리 보기
-  // const happyBirthday = async () => {
-  //   const response = await axios.get('/users/mypage/birthday')
-  //   setBirthday(response.data)
-  // }
+  // 생일 미리 보기
+  const happyBirthday = async () => {
+    const response = await axios.get('/users/mypage/birthday')
+    setBirthday(response.data)
+  }
 
   // 유저목록 조회
   const getUsersList = async () => {
@@ -71,7 +71,7 @@ function UserList() {
     const response = await axios.get('/room')
     setChatRooms(response.data)
   }
-  console.log('chatRooms : ', chatRooms)
+  // console.log('chatRooms : ', chatRooms)
 
   // 방생성 
   const addChatRoom = async () => {
@@ -97,23 +97,23 @@ function UserList() {
   const userDetail = (userId) => {
     getUserDetailModal(userId)
     setShowModal(true)
-    console.log('userId : ', userId)
+    // console.log('userId : ', userId)
   }
 
   const getUserDetailModal = async (userId) => {
     const response = await axios.get(`/users/user-info/${userId}`)
     setDetailProfile(response.data)
-    console.log('getUserDetailModal : ', detailProfile)
+    // console.log('getUserDetailModal : ', detailProfile)
   }
 
   const entryChatRoom = (roomId) => {
     getEntryChatRoom(roomId)
-    console.log('입장')
+    // console.log('입장')
   }
 
   const getEntryChatRoom = async (roomId) => {
     const response = await axios.get(`/chat/${roomId}`)
-    console.log('response : ', response.data)
+    // console.log('response : ', response.data)
     navigate(`/ChatRoom/${roomId}`)
 
   }
@@ -135,14 +135,17 @@ function UserList() {
           )}
         </UserInfoContainer>
 
-        {/* <BirthdayContainer>
+        <BirthdayContainer>
+          <div>
+            <h4>생일인<br /> 친구</h4>
+          </div>
           {birthday.map((HBD) => (
             <div key={HBD.userid}>
               <BirthdayImage src={HBD.image_url} alt="프로필 사진" />
               <div>{HBD.username}</div>
             </div>
           ))}
-        </BirthdayContainer> */}
+        </BirthdayContainer>
 
         <ShowListContainer>
           <ShowContainerSecthon>

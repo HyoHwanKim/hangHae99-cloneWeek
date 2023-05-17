@@ -33,11 +33,15 @@ function Header() {
     navigate('/')
   }
 
+  const logoClick = () => {
+    navigate('/userslist')
+  }
+
   return (
     <HeaderContainer>
       <Left></Left>
       <Center>
-        <Logo src={logo} alt="logo" />
+        <Logo src={logo} alt="logo" onClick={logoClick} />
       </Center>
       <Right onClick={logOutHeandler}>LogOut</Right>
     </HeaderContainer>

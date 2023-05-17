@@ -7,6 +7,7 @@ import { receiveChatRoomInfo } from "../api/api";
 import { useQuery, useMutation, QueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import { submitPicture } from "../api/api";
+import Header from "../components/Header";
 
 function ChatRoom() {
   // 입력값 상태관리
@@ -137,6 +138,7 @@ function ChatRoom() {
 
   return (
     <div>
+      <Header />
       <ChatRoomWrapper>
         <ChatLog ref={scrollRef}>
           {messageList.map((item, index) => (
@@ -247,9 +249,9 @@ const IndividualChatWrapper = styled.div`
 
   .chat-name {
     display: ${(props) =>
-      (props.commentUserId == props.whoIAm ||
-        props.previousId == props.commentUserId) &&
-      "none"};
+    (props.commentUserId == props.whoIAm ||
+      props.previousId == props.commentUserId) &&
+    "none"};
     color: rgb(80, 80, 80);
     font-size: 15px;
     margin: 0 10px 0 10px;
@@ -258,15 +260,15 @@ const IndividualChatWrapper = styled.div`
   .chat-bubble-wrapper {
     display: flex;
     flex-direction: ${(props) =>
-      props.commentUserId == props.whoIAm ? "row-reverse" : "row"};
+    props.commentUserId == props.whoIAm ? "row-reverse" : "row"};
     ${(props) =>
-      props.previousId == props.commentUserId
-        ? "margin : 0px 10px 0px 40px"
-        : "margin : 10px"};
+    props.previousId == props.commentUserId
+      ? "margin : 0px 10px 0px 40px"
+      : "margin : 10px"};
 
     .chat-bubble {
       background-color: ${(props) =>
-        props.commentUserId == props.whoIAm ? "yellow" : "white"};
+    props.commentUserId == props.whoIAm ? "yellow" : "white"};
       padding: 10px;
       margin-left: 10px;
       border-radius: 10px;
@@ -279,7 +281,7 @@ const IndividualChatWrapper = styled.div`
     font-size: 13px;
     margin-left: 5px;
     text-align: ${(props) =>
-      props.commentUserId == props.whoIAm ? "right" : "left"};
+    props.commentUserId == props.whoIAm ? "right" : "left"};
   }
 `;
 
@@ -290,10 +292,10 @@ const ProfileImage = styled.div`
 
   .img-wrapper {
     display: ${(props) =>
-      props.commentUserId == props.whoIAm ||
+    props.commentUserId == props.whoIAm ||
       props.previousId == props.commentUserId
-        ? "none"
-        : "block"};
+      ? "none"
+      : "block"};
     border-radius: 10px;
     height: 40px;
     width: 40px;
