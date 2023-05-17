@@ -1,16 +1,20 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 
 function Header() {
+
+  const navigate = useNavigate()
+
 
   const logOut = async () => {
 
     const REFRESH_KEY = localStorage.getItem('REFRESH_KEY')
     const ACCESS_KEY = localStorage.getItem('ACCESS_KEY')
 
-    const response = await axios.post('http://13.125.6.183:8080/users/logout',
+    const response = await axios.post('http://13.125.6.183:8080/users/logout', {},
       {
         headers: {
           ACCESS_KEY: ACCESS_KEY,
@@ -21,9 +25,10 @@ function Header() {
 
   const logOutHeandler = () => {
     logOut()
-    // window.localStorage.removeItem('REFRESH_KEY')
-    // window.localStorage.removeItem('ACCESS_KEY')
-    console.log('로그아웃')
+    window.localStorage.removeItem('REFRESH_KEY')
+    window.localStorage.removeItem('ACCESS_KEY')
+    alert('로그아웃')
+    navigate('/')
   }
 
   return (

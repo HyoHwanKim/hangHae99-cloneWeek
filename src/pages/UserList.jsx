@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import Header from '../components/Header'
 import axios from '../utils/axios'
 import ReactModal from 'react-modal'
+import { useNavigate } from 'react-router-dom'
 
 
 function UserList() {
@@ -15,6 +16,7 @@ function UserList() {
   const [birthday, setBirthday] = useState([])
   const [detailProfile, setDetailProfile] = useState([])
 
+  const navigate = useNavigate()
 
   const openModal = () => {
     setAddRoom(true)
@@ -38,7 +40,7 @@ function UserList() {
     getMyProfile()
     getUsersList()
     getChatRoomList()
-    happyBirthday()
+    // happyBirthday()
   }, [])
 
   //내 정보 조회
@@ -48,10 +50,10 @@ function UserList() {
   }
 
   //생일 미리 보기
-  const happyBirthday = async () => {
-    const response = await axios.get('/users/mypage/birthday')
-    setBirthday(response.data)
-  }
+  // const happyBirthday = async () => {
+  //   const response = await axios.get('/users/mypage/birthday')
+  //   setBirthday(response.data)
+  // }
 
   // 유저목록 조회
   const getUsersList = async () => {
@@ -68,6 +70,7 @@ function UserList() {
     const response = await axios.get('/room')
     setChatRooms(response.data)
   }
+  console.log('chatRooms : ', chatRooms)
 
   // 방생성 
   const addChatRoom = async () => {
@@ -102,6 +105,18 @@ function UserList() {
     console.log('getUserDetailModal : ', detailProfile)
   }
 
+  const entryChatRoom = (roomId) => {
+    getEntryChatRoom(roomId)
+    console.log('입장')
+  }
+
+  const getEntryChatRoom = async (roomId) => {
+    const response = await axios.get(`/chat/${roomId}`)
+    console.log('response : ', response.data)
+    navigate(`/ChatRoom/${roomId}`)
+
+  }
+
 
 
 
@@ -119,14 +134,14 @@ function UserList() {
           )}
         </UserInfoContainer>
 
-        <BirthdayContainer>
+        {/* <BirthdayContainer>
           {birthday.map((HBD) => (
             <div key={HBD.userid}>
               <BirthdayImage src={HBD.image_url} alt="프로필 사진" />
               <div>{HBD.username}</div>
             </div>
           ))}
-        </BirthdayContainer>
+        </BirthdayContainer> */}
 
         <ShowListContainer>
           <Test>
@@ -141,7 +156,7 @@ function UserList() {
           <Test>
             <button onClick={openModal}>방생성</button>
             {chatRooms.map((room) => (
-              <ShowChatRooms key={room.roomId}>
+              <ShowChatRooms key={room.roomId} onClick={() => entryChatRoom(room.roomId)}>
                 {room.roomName}
               </ShowChatRooms>
             ))}

@@ -8,6 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { addUsers } from '../api/users'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
+import axios from 'axios'
 
 
 function Signup() {
@@ -21,6 +22,8 @@ function Signup() {
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
+  const [duplicateError, setDuplicateError] = useState('')
+
 
   const navigate = useNavigate()
 
@@ -29,7 +32,7 @@ function Signup() {
     file = e.target.files[0]
     const reader = new FileReader()
 
-    // console.log('사진 : ', file)
+    console.log('사진 : ', file)
 
     reader.onloadend = () => {
       setImagePreview(file) // 이미지 데이터를 그대로 설정
@@ -40,18 +43,34 @@ function Signup() {
     }
   }
 
-  const DuplicateCheck = () => {
-    // 중복검사 로직
+  const duplicateCheck = async (userid) => {
+    try {
+      const response = await axios.get(`http://13.125.6.183:8080/users/userCheck/${userid}`)
+
+      if (response.data.message == '아이디 중복') {
+        setDuplicateError('이미 사용 중인 아이디입니다.')
+      } else {
+        setDuplicateError('')
+      }
+    } catch (error) {
+      console.error('Duplicate Check Error: ', error)
+    }
+  }
+
+  const duplicateButton = () => {
+    if (userid) {
+      duplicateCheck(userid)
+    } else {
+      setDuplicateError('아이디를 입력해주세요.')
+    }
   }
 
   useEffect(() => {
-    console.log(selectedDate);
-  }, [selectedDate]);
+  }, [selectedDate])
 
 
   const handleDateChange = (date) => {
     setSelectedDate(date)
-    console.log(selectedDate)
   }
 
   const SignUpClick = async () => {
@@ -110,7 +129,6 @@ function Signup() {
       formData.append('birthday', formattedDate)
       formData.append('image', imagePreview)
 
-      console.log('데이트피커 : ', formattedDate)
 
       try {
         const response = await addUsers(formData)
@@ -144,14 +162,14 @@ function Signup() {
             variant="standard"
             value={userid}
             onChange={(e) => setUserId(e.target.value)}
-            error={!!userIdError}
-            helperText={userIdError}
+            error={!!userIdError || !!duplicateError}
+            helperText={userIdError || duplicateError}
             sx={{
               width: '235px',
               margin: '20px',
             }}
           />
-          <Button variant="contained" onClick={DuplicateCheck}
+          <Button variant="contained" onClick={duplicateButton}
             sx={{
               width: '90px',
               height: '50px',

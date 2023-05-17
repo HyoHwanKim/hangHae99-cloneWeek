@@ -15,7 +15,6 @@ const Router = () => {
           <Route path='/signup' element={<Signup />} />
           <Route path='/ChatRoom/:id' element={<ChatRoom />} />
           <Route path='/userslist' element={<UserList />} />
-          {/* <Route path='/test' element={<Header />} /> */}
         </Routes>
       </BrowserRouter>
     </>
