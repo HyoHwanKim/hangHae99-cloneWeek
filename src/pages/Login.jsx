@@ -26,7 +26,7 @@ function Login() {
       }
 
       // 서버로 데이터 전송
-      const response = await axios.post('http://13.125.6.183:8080/users/login', loginData)
+      const response = await axios.post('https://www.kimsubak.site/users/login', loginData)
       console.log('데이터 : ', response.data)
 
       const Access_key = response.headers.get('Access_key')

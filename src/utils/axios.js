@@ -2,7 +2,7 @@ import axios from "axios";
 
 //UserList get 비동기함수
 const axiosInstanse = axios.create({
-  baseURL: 'http://13.125.6.183:8080'
+  baseURL: 'https://www.kimsubak.site/'
 })
 
 axiosInstanse.interceptors.request.use((config) => {
