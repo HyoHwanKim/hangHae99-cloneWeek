@@ -23,6 +23,7 @@ function Signup() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const [duplicateError, setDuplicateError] = useState('')
+  const [duplicateSuccess, setDuplicateSuccess] = useState('')
 
 
   const navigate = useNavigate()
@@ -49,8 +50,8 @@ function Signup() {
 
       if (response.data.message == '아이디 중복') {
         setDuplicateError('이미 사용 중인 아이디입니다.')
-      } else {
-        setDuplicateError('')
+      } else if (response.data.message == '사용가능한 아이디 입니다.') {
+        setDuplicateSuccess('사용가능')
       }
     } catch (error) {
       console.error('Duplicate Check Error: ', error)
@@ -163,7 +164,7 @@ function Signup() {
             value={userid}
             onChange={(e) => setUserId(e.target.value)}
             error={!!userIdError || !!duplicateError}
-            helperText={userIdError || duplicateError}
+            helperText={userIdError || duplicateError || duplicateSuccess}
             sx={{
               width: '235px',
               margin: '20px',

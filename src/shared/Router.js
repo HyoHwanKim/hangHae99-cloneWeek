@@ -4,13 +4,11 @@ import Signup from "../pages/Signup";
 import ChatRoom from "../pages/ChatRoom";
 import UserList from "../pages/UserList";
 import MyPage from "../pages/MyPage";
-import Header from "../components/Header";
 
 const Router = () => {
   return (
     <>
       <BrowserRouter>
-        <Header />
         <Routes>
           <Route path='/' element={<Login />} />
           <Route path='/signup' element={<Signup />} />

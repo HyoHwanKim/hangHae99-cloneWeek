@@ -7,6 +7,7 @@ import { receiveChatRoomInfo } from "../api/api";
 import { useQuery, useMutation } from "react-query";
 import { useParams } from "react-router-dom";
 import { submitPicture } from "../api/api";
+import Header from "../components/Header";
 
 function ChatRoom() {
   // 입력값 상태관리
@@ -230,6 +231,7 @@ function ChatRoom() {
 
   return (
     <div>
+      <Header />
       <ChatRoomWrapper>
         <ChatLog ref={scrollRef}>
           {messageList.map((item, index) => (

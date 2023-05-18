@@ -88,6 +88,8 @@ function Login() {
             sx={{
               backgroundColor: 'white',
               color: 'black',
+              width: '140px',
+              marginTop: '10px',
               '&:hover': {
                 backgroundColor: colors.brown[800],
                 color: 'white'
@@ -102,6 +104,8 @@ function Login() {
             sx={{
               backgroundColor: 'white',
               color: 'black',
+              width: '140px',
+              marginTop: '10px',
               '&:hover': {
                 backgroundColor: colors.brown[800],
                 color: 'white'
@@ -130,8 +134,8 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #FEE500;
-`
+  background-color: #FFFFFF;
+  `
 
 const LoginForm = styled.div`
   display: flex;
@@ -141,6 +145,11 @@ const LoginForm = styled.div`
   padding: 20px;
   max-width: 400px;
   width: 100%;
+  background-color: #FEE500;
+  padding: 50px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+  height: 600px;
+
 `
 
 const TextFidelContainer = styled.div`
