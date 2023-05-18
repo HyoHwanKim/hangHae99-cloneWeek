@@ -38,7 +38,7 @@ function Header() {
     <HeaderContainer>
       <Left></Left>
       <Center>
-        <Logo src={logo} alt="logo" />
+        <Logo src={logo} alt="logo" onClick={logoClick} />
       </Center>
       <Right onClick={logOutHeandler}>LogOut</Right>
     </HeaderContainer>
@@ -50,6 +50,7 @@ export default Header;
 const Logo = styled.img`
   width: 100px;
   height: 100px;
+  cursor: pointer;
 `;
 
 const HeaderContainer = styled.div`

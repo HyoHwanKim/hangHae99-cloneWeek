@@ -25,7 +25,6 @@ function Signup() {
   const [duplicateError, setDuplicateError] = useState('')
   const [duplicateSuccess, setDuplicateSuccess] = useState('')
 
-
   const navigate = useNavigate()
 
   let file
@@ -36,13 +35,29 @@ function Signup() {
     console.log('사진 : ', file)
 
     reader.onloadend = () => {
-      setImagePreview(file) // 이미지 데이터를 그대로 설정
+      setImagePreview(file)
     }
 
     if (file) {
       reader.readAsArrayBuffer(file)
     }
   }
+
+  // const ImageUploadHandler = (e) => {
+  //   file = e.target.files[0]
+  //   const reader = new FileReader()
+
+  //   console.log('사진 : ', file)
+
+  //   reader.onloadend = () => {
+  //     const dataURL = reader.result
+  //     setImagePreview(dataURL)
+  //   }
+
+  //   if (file) {
+  //     reader.readAsDataURL(file)
+  //   }
+  // }
 
   const duplicateCheck = async (userid) => {
     try {
@@ -153,7 +168,7 @@ function Signup() {
       >
         <FileUploadContainer>
           <ImagePreview src={imagePreview} alt="Preview" />
-          <input type="file" accept="image/*" onChange={ImageUploadHandler} />
+          <FileInput type="file" accept="image/*" onChange={ImageUploadHandler} />
         </FileUploadContainer>
 
         <IdContainer>
@@ -268,6 +283,7 @@ const SignUpForm = styled.form`
 `
 
 const FileUploadContainer = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,7 +297,19 @@ const ImagePreview = styled.img`
   margin-top: 10px;
   border-radius: 50%;
   border: 1px solid black;
+  object-fit: cover;
+
 `
+const FileInput = styled.input`
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+`;
+
 
 const IdContainer = styled.div`
   display: flex;
