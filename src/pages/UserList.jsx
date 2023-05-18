@@ -164,7 +164,7 @@ function UserList() {
               >
                 <UserImage src={user.profile_image} alt='프로필 사진' />
                 <Name>{user.username}</Name>
-                <Name>{user.comment}</Name>
+                <Comment>{user.comment}</Comment>
               </ShowUserList>
             ))}
           </ShowContainerSecthon>
@@ -248,7 +248,7 @@ function UserList() {
                 alt='프로필 사진'
               />
               <UserProfileName>{detailProfile.username}</UserProfileName>
-              <div>{detailProfile.comment}</div>
+              <UserProfileComment>{detailProfile.comment}</UserProfileComment>
             </UserProfileModal>
           </ReactModal>
         </ShowListContainer>
@@ -258,6 +258,18 @@ function UserList() {
 }
 
 export default UserList;
+
+const Comment = styled.div`
+  margin-left: auto;
+  font-weight: bold; 
+  
+`
+
+const UserProfileComment = styled.div`
+  margin-top: auto; 
+  font-weight: bold; 
+  font-size: 30px;
+`
 
 const ChatRoomButton = styled.img`
   cursor: pointer;
@@ -290,6 +302,12 @@ const AddRoomModal = styled.div`
 
 const UserProfileModal = styled.div`
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 20px;
 `;
 
 const UserProfileImage = styled.img`
