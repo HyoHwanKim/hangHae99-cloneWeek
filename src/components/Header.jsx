@@ -12,7 +12,7 @@ function Header() {
     const ACCESS_KEY = localStorage.getItem("ACCESS_KEY");
 
     const response = await axios.post(
-      "http://13.125.6.183:8080/users/logout",
+      `${process.env.REACT_APP_SERVER_URL}/users/logout`,
       {},
       {
         headers: {
