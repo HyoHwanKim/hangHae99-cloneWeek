@@ -275,7 +275,9 @@ const ChatRoomButton = styled.img`
   cursor: pointer;
   width: 100px;
   height: 100px;
-  margin-left: 500px;
+  /* margin-left: 500px; */
+  margin-left: auto;
+
 `;
 
 const RoomProfile = styled.div`
