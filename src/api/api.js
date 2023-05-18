@@ -45,4 +45,25 @@ const receiveMyPageInfo = async ({ token }) => {
   }
 };
 
-export { receiveChatRoomInfo, submitPicture, receiveMyPageInfo };
+// 마이페이지 put api, method : put, end-point : /users/mypage
+const editMyPageInfo = async ({ token, userInfo }) => {
+  try {
+    const { profile_image, ...userInfoWithoutImage } = userInfo;
+    const response = await axios.put(
+      `${process.env.REACT_APP_SERVER_URL}/users/mypage`,
+      userInfoWithoutImage,
+      { headers: { ACCESS_KEY: `${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return Promise.reject(error.response.data.message);
+  }
+};
+
+export {
+  receiveChatRoomInfo,
+  submitPicture,
+  receiveMyPageInfo,
+  editMyPageInfo,
+};
