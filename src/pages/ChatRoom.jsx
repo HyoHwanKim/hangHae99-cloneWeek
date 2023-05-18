@@ -37,47 +37,95 @@ function ChatRoom() {
   const roomId = params.id;
 
   //방 정보 받아오기
-  const { isLoading, isError, data } = useQuery("receiveRoomInfo", () =>
-    receiveChatRoomInfo({ token, roomId })
+  const { isLoading, isError, data } = useQuery(
+    "receiveRoomInfo",
+    () => receiveChatRoomInfo({ token, roomId }),
+    { refetchOnWindowFocus: false, refetchOnMount: false }
   );
 
+  // useEffect(() => {
+  //   let stompClient = null;
+  //   if (data) {
+  //     setChatRoomInfo(data);
+  //     // 소켓 연결
+  //     const stompClient = new Client({
+  //       webSocketFactory: () =>
+  //         new SockJS(`${process.env.REACT_APP_SERVER_URL}/ws-edit`),
+  //       // 접속했을 때
+  //       onConnect: (frame) => {
+  //         setStompClient(stompClient);
+  //         // 구독상태 만들기
+  //         stompClient.subscribe("/sub/chat/room" + roomId, function (message) {
+  //           setMessageList((prev) => [...prev, JSON.parse(message.body)]);
+  //         });
+
+  //         stompClient.publish({
+  //           destination: "/pub/chat/enter",
+  //           headers: { ACCESS_KEY: token },
+  //           body: JSON.stringify({
+  //             type: "ENTER",
+  //             sender: data.sender,
+  //             userId: data.userId,
+  //             roomId: data.roomId,
+  //             message: "",
+  //           }),
+  //         });
+  //       },
+  //       onDisconnect: () => {
+  //         stompClient.publish({
+  //           destination: "/pub/chat/leave",
+  //           headers: { ACCESS_KEY: token },
+  //           body: JSON.stringify({
+  //             type: "LEAVE",
+  //             sender: data.sender,
+  //             userId: data.userId,
+  //             roomId: data.roomId,
+  //             message: "",
+  //           }),
+  //         });
+  //         stompClient && stompClient.deactivate();
+  //       },
+  //     });
+  //     stompClient.activate();
+  //   }
+  // }, [data]);
+
   useEffect(() => {
+    let stompClient = null;
     if (data) {
       setChatRoomInfo(data);
       // 소켓 연결
-      const stompClient = new Client({
+      stompClient = new Client({
         webSocketFactory: () =>
           new SockJS(`${process.env.REACT_APP_SERVER_URL}/ws-edit`),
         // 접속했을 때
         onConnect: (frame) => {
           setStompClient(stompClient);
           // 구독상태 만들기
-          const subscriptionInfo = stompClient.subscribe(
-            "/sub/chat/room" + roomId,
-            function (message) {
-              setMessageList((prev) => [...prev, JSON.parse(message.body)]);
-            }
-          );
+          stompClient.subscribe("/sub/chat/room" + roomId, function (message) {
+            setMessageList((prev) => [...prev, JSON.parse(message.body)]);
+          });
 
-          chatRoomInfo !== {} &&
-            stompClient.publish({
-              destination: "/pub/chat/enter",
-              headers: { ACCESS_KEY: token },
-              body: JSON.stringify({
-                type: "ENTER",
-                sender: data.sender,
-                roomId: data.roomId,
-                message: "",
-              }),
-            });
+          stompClient.publish({
+            destination: "/pub/chat/enter",
+            headers: { ACCESS_KEY: token },
+            body: JSON.stringify({
+              type: "ENTER",
+              sender: data.sender,
+              userId: data.userId,
+              roomId: data.roomId,
+              message: "",
+            }),
+          });
         },
         onDisconnect: () => {
           stompClient.publish({
-            destination: "pub/chat/leave",
+            destination: "/pub/chat/leave",
             headers: { ACCESS_KEY: token },
             body: JSON.stringify({
               type: "LEAVE",
               sender: data.sender,
+              userId: data.userId,
               roomId: data.roomId,
               message: "",
             }),
@@ -86,7 +134,41 @@ function ChatRoom() {
       });
       stompClient.activate();
     }
+
+    return () => {
+      // 컴포넌트가 언마운트될 때 연결을 끊음
+      stompClient && stompClient.deactivate();
+    };
   }, [data]);
+
+  // useEffect(() => {
+  //   const handleBeforeUnload = (event) => {
+  //     // 원하는 로직을 실행
+  //     stompClient.publish({
+  //       destination: "/pub/chat/leave",
+  //       headers: { ACCESS_KEY: token },
+  //       body: JSON.stringify({
+  //         type: "LEAVE",
+  //         sender: data.sender,
+  //         userId: data.userId,
+  //         roomId: data.roomId,
+  //         message: "",
+  //       }),
+  //     });
+
+  //     // 이벤트 메시지를 설정하여 사용자에게 경고 메시지를 표시할 수도 있습니다.
+  //     event.preventDefault();
+  //     event.returnValue = ""; // Chrome에서는 이 값을 설정해야 경고 메시지가 표시됩니다.
+  //   };
+
+  //   // beforeunload 이벤트 리스너 등록
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+
+  //   return () => {
+  //     // 컴포넌트가 언마운트될 때 이벤트 리스너 제거
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, [stompClient]);
 
   const sendMsg = () => {
     const messageInfo = {
@@ -134,9 +216,9 @@ function ChatRoom() {
   });
 
   const uploadImageHandler = () => {
+    console.log(uploadImage);
     uploadImage !== null &&
       submitPictureApi.mutate({ token, file: uploadImage });
-    setUploadImage(null);
   };
 
   if (isLoading) {
@@ -156,8 +238,9 @@ function ChatRoom() {
               key={index}
               messagetype={item.type}
               previousId={messageList[index - 1]?.userId}
+              previousType={messageList[index - 1]?.type}
               commentUserId={item.userId}
-              commentUserProfileImgUrl={item.image_url}
+              commentUserProfileImgUrl={item.profile_image}
               commentDate={item.date}
               commentUserName={item.sender}
               commentContent={item.message}
@@ -201,6 +284,7 @@ function ChatRoom() {
 
 const IndividualChat = ({
   previousId,
+  previousType,
   commentUserId,
   commentUserProfileImgUrl,
   commentDate,
@@ -215,11 +299,13 @@ const IndividualChat = ({
       {messagetype === "TALK" ? (
         <IndividualChatWrapper
           previousId={previousId}
+          previousType={previousType}
           whoIAm={whoIAm}
           commentUserId={commentUserId}
         >
           <ProfileImage
             previousId={previousId}
+            previousType={previousType}
             whoIAm={whoIAm}
             commentUserId={commentUserId}
           >
@@ -282,13 +368,15 @@ const IndividualChatWrapper = styled.div`
   ${(props) =>
     props.previousId == props.commentUserId
       ? "margin : 5px 0 5px 10px"
-      : "margin: 5px 0 5px 0"};
+      : "margin: 5px 0 5px 10px"};
 
   .chat-name {
     display: ${(props) =>
-      (props.commentUserId == props.whoIAm ||
-        props.previousId == props.commentUserId) &&
-      "none"};
+      props.commentUserId == props.whoIAm ||
+      (props.previousId == props.commentUserId &&
+        props.previousType !== "ENTER")
+        ? "none"
+        : "block"};
     color: rgb(80, 80, 80);
     font-size: 15px;
     margin: 0 10px 0 10px;
@@ -299,15 +387,14 @@ const IndividualChatWrapper = styled.div`
     flex-direction: ${(props) =>
       props.commentUserId == props.whoIAm ? "row-reverse" : "row"};
     ${(props) =>
-      props.previousId == props.commentUserId
-        ? "margin : 0px 10px 0px 40px"
+      props.previousId == props.commentUserId && props.previousType !== "ENTER"
+        ? "margin : 0px 10px 0px 50px"
         : "margin : 10px"};
 
     .chat-bubble {
       background-color: ${(props) =>
         props.commentUserId == props.whoIAm ? "yellow" : "white"};
       padding: 10px;
-      margin-left: 10px;
       border-radius: 10px;
     }
   }
@@ -315,10 +402,11 @@ const IndividualChatWrapper = styled.div`
   .comment-date {
     align-self: flex-end;
     width: 140px;
-    font-size: 13px;
+    font-size: 11px;
     margin-left: 5px;
     text-align: ${(props) =>
       props.commentUserId == props.whoIAm ? "right" : "left"};
+    color: grey;
   }
 `;
 
@@ -330,7 +418,8 @@ const ProfileImage = styled.div`
   .img-wrapper {
     display: ${(props) =>
       props.commentUserId == props.whoIAm ||
-      props.previousId == props.commentUserId
+      (props.previousId == props.commentUserId &&
+        props.previousType !== "ENTER")
         ? "none"
         : "block"};
     border-radius: 10px;
