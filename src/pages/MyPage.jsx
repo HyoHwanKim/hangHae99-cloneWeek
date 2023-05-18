@@ -118,7 +118,7 @@ const Transluscent = ({
   userInfo,
 }) => {
   return (
-    <div>
+    <div id='transluscent-wrapper'>
       <TransluscentWrapper onClick={onClick} isModalOpen={isModalOpen}>
         {whichModalOpen === "name" ? (
           <NameModal
@@ -160,14 +160,12 @@ const NameModal = styled.input`
   align-items: center;
   height: 6%;
   width: 75%;
-  margin: 0;
   padding-left: 10px;
   border-radius: 10px;
   background-color: rgb(245, 245, 220);
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
   font-size: 20px;
   font-weight: 600;
-  margin-top: 258px;
 `;
 
 const PasswordModal = styled.input`
@@ -182,7 +180,6 @@ const PasswordModal = styled.input`
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
   font-size: 20px;
   font-weight: 600;
-  margin-top: 320px;
 `;
 
 const BirthdayModal = styled.input`
@@ -197,7 +194,6 @@ const BirthdayModal = styled.input`
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
   font-size: 20px;
   font-weight: 600;
-  margin-top: 386px;
 `;
 
 const CommentModal = styled.input`
@@ -212,22 +208,15 @@ const CommentModal = styled.input`
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
   font-size: 20px;
   font-weight: 600;
-  margin-top: 450px;
 `;
 
 const TransluscentWrapper = styled.div`
+  height: 100%;
+  width: 100%;
   display: flex;
+  position: relative;
   justify-content: center;
-  position: fixed;
-  top: 10%;
-  left: 25%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1;
-  height: 70%;
-  width: 50%;
-  border-radius: 20px;
-  margin-top: 86px;
-  ${(props) => props.isModalOpen && "pointer-events : all"};
+  margin-top: 15%;
 `;
 
 const MyPageWrapper = styled.div`
@@ -237,6 +226,19 @@ const MyPageWrapper = styled.div`
   position: relative;
   align-items: center;
   height: 100vh;
+
+  #transluscent-wrapper {
+    display: flex;
+    position: fixed;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    height: 70%;
+    width: 50%;
+    border-radius: 20px;
+    margin-top: 86px;
+    ${(props) => props.isModalOpen && "pointer-events : all"};
+  }
 `;
 
 const MyPageForm = styled.div`
