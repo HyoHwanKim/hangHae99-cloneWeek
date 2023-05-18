@@ -2,7 +2,7 @@ import axios from "axios";
 
 //UserList get 비동기함수
 const axiosInstanse = axios.create({
-  baseURL: 'https://www.kimsubak.site/'
+  baseURL: process.env.REACT_APP_SERVER_URL
 })
 
 axiosInstanse.interceptors.request.use((config) => {

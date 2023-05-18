@@ -61,7 +61,7 @@ function Signup() {
 
   const duplicateCheck = async (userid) => {
     try {
-      const response = await axios.get(`https://www.kimsubak.site/users/userCheck/${userid}`)
+      const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/users/userCheck/${userid}`)
 
       if (response.data.message == '아이디 중복') {
         setDuplicateError('이미 사용 중인 아이디입니다.')

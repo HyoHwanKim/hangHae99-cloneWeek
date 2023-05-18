@@ -164,22 +164,12 @@ function UserList() {
               >
                 <UserImage src={user.profile_image} alt='프로필 사진' />
                 <Name>{user.username}</Name>
+                <Name>{user.comment}</Name>
               </ShowUserList>
             ))}
           </ShowContainerSecthon>
 
           <ShowContainerSecthon2>
-            {/* <IconButton
-              variant="outlined"
-              onClick={openModal}
-              sx={{
-                marginBottom: '20px',
-                width: '100%',
-                padding: '10px'
-              }}
-            >
-              <AddCircleOutlineIcon />
-            </IconButton> */}
 
             <ChatRoomButton src={chatroom} alt='' onClick={openModal} />
 
@@ -258,7 +248,7 @@ function UserList() {
                 alt='프로필 사진'
               />
               <UserProfileName>{detailProfile.username}</UserProfileName>
-              {/* 상태메세지 들어갈자리 */}
+              <div>{detailProfile.comment}</div>
             </UserProfileModal>
           </ReactModal>
         </ShowListContainer>
